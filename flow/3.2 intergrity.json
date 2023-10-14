@@ -1,0 +1,99 @@
+[
+    {
+        "id": "736a772f7696da76",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "9f9630e224eed199",
+        "type": "inject",
+        "z": "736a772f7696da76",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 220,
+        "y": 220,
+        "wires": [
+            [
+                "72eb0ea7e6388914"
+            ]
+        ]
+    },
+    {
+        "id": "207b4b453361172a",
+        "type": "GSheet",
+        "z": "736a772f7696da76",
+        "creds": "b9ffd08fb8f9401d",
+        "method": "get",
+        "action": "",
+        "sheet": "1EyP_NLBfocmvDEHfjchnHu9Wm8Olir4K_YttE--t8Tc",
+        "cells": "",
+        "flatten": true,
+        "name": "",
+        "x": 450,
+        "y": 220,
+        "wires": [
+            [
+                "73db342aaf5bd81c"
+            ]
+        ]
+    },
+    {
+        "id": "73db342aaf5bd81c",
+        "type": "debug",
+        "z": "736a772f7696da76",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 660,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "72eb0ea7e6388914",
+        "type": "function",
+        "z": "736a772f7696da76",
+        "name": "function 3",
+        "func": "const randomNumber = Math.random();\nif (randomNumber <= 0.05) {\n    var number = parseFloat(msg.payload);\n    if (number){\n        number = number*2\n        msg.payload = number.toString()\n    }\n    }\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 140,
+        "wires": [
+            [
+                "207b4b453361172a"
+            ]
+        ]
+    },
+    {
+        "id": "b9ffd08fb8f9401d",
+        "type": "gauth",
+        "name": "myservice@certain-purpose-387818.iam.gserviceaccount.com"
+    }
+]

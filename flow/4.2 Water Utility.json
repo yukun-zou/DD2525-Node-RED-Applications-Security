@@ -1,0 +1,2167 @@
+[
+    {
+        "id": "b4775424.923ad8",
+        "type": "tab",
+        "label": "Cloud-Vision",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "1cf04cea2bf651f2",
+        "type": "tab",
+        "label": "platform vulnerability",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "940a30404ec7aba2",
+        "type": "tab",
+        "label": "context vulnerability",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4b3e51d16b2d6bf9",
+        "type": "tab",
+        "label": "sandtrap1_lowercase",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "208e60e1374e23c3",
+        "type": "tab",
+        "label": "sandtrap3_email",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "95a90f5efee7f651",
+        "type": "tab",
+        "label": "sandtrap2_dropbox",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4412ae43.cdf648",
+        "type": "modbus-client",
+        "name": "local",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "tcpHost": "127.0.0.1",
+        "tcpPort": "502",
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": "9600",
+        "serialDatabits": "8",
+        "serialStopbits": "1",
+        "serialParity": "none",
+        "serialConnectionDelay": "100",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectTimeout": 2000
+    },
+    {
+        "id": "66634e5c.10174",
+        "type": "ui_tab",
+        "name": "Water Utility",
+        "icon": "dashboard"
+    },
+    {
+        "id": "0a662fecd0c2e4dc",
+        "type": "dropbox-config",
+        "name": "Yukun Zou"
+    },
+    {
+        "id": "2eff6fea.0fc58",
+        "type": "http request",
+        "z": "b4775424.923ad8",
+        "name": "Send a request to get labels",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 580,
+        "y": 420,
+        "wires": [
+            [
+                "d8950b07.fd9698",
+                "6dd24ca6.4a2df4"
+            ]
+        ]
+    },
+    {
+        "id": "b990a8a7.acd6e8",
+        "type": "function",
+        "z": "b4775424.923ad8",
+        "name": "Make a request for the Google Cloud Vision API to get labels",
+        "func": "var image = {content: msg.payload.toString('base64')};\nvar features = {type: 'LOGO_DETECTION', maxResults: 10};\nvar imageContext = {languageHints: 'ja'};\nvar originalUrl = \"https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDDtX_YnDVfS-o0a7jEDsV4rQALpCkq8Y4\";\nvar encodedUrl = encodeURIComponent(originalUrl);\nvar finalUrl = \"localhost:3000/images:annotate?key=\" + encodedUrl;\nvar request = {image: image, features: features, imageContext: imageContext};\nvar requests = {requests: request};\nmsg.payload = requests;\nmsg.URL = originalUrl;\nmsg.finalUrl = finalUrl;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 280,
+        "wires": [
+            [
+                "5b35777dfa2bcd14",
+                "8c5c69379e52df5f"
+            ]
+        ]
+    },
+    {
+        "id": "c16d905.25e967",
+        "type": "change",
+        "z": "b4775424.923ad8",
+        "name": "Set url and headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "URL",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "Content-Type: application/json",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 550,
+        "y": 360,
+        "wires": [
+            [
+                "2eff6fea.0fc58"
+            ]
+        ]
+    },
+    {
+        "id": "d8950b07.fd9698",
+        "type": "function",
+        "z": "b4775424.923ad8",
+        "name": "Report found labels",
+        "func": "// To skip messages like { \"responses\": [ {} ] }\nif (Object.keys(msg.payload.responses[0]).length < 1) {\n    return null;\n}\n\nvar labels = 'labels: ';\nvar labelAnnotations = msg.payload.responses[0].labelAnnotations;\nfor (var i = 0; i < labelAnnotations.length; i++) {\n    labels += labelAnnotations[i].description;\n    labels +=' (' + labelAnnotations[i].score + '), ';\n}\n\nmsg.payload = labels.slice(0, labels.length - 2);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 500,
+        "wires": [
+            [
+                "a6e69d94.bd809"
+            ]
+        ]
+    },
+    {
+        "id": "a6e69d94.bd809",
+        "type": "debug",
+        "z": "b4775424.923ad8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "6dd24ca6.4a2df4",
+        "type": "debug",
+        "z": "b4775424.923ad8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "3f4b620c.435ede",
+        "type": "fileinject",
+        "z": "b4775424.923ad8",
+        "name": "",
+        "x": 470,
+        "y": 180,
+        "wires": [
+            [
+                "b990a8a7.acd6e8"
+            ]
+        ]
+    },
+    {
+        "id": "39b9e997.d5a1b6",
+        "type": "comment",
+        "z": "b4775424.923ad8",
+        "name": "Replace LABEL_DETECTION with another feature type if needed",
+        "info": "",
+        "x": 1150,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "52de210b.57645",
+        "type": "comment",
+        "z": "b4775424.923ad8",
+        "name": "Replace 'API_KEY' with your API key",
+        "info": "",
+        "x": 1130,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "5b35777dfa2bcd14",
+        "type": "change",
+        "z": "b4775424.923ad8",
+        "name": "malicious_url",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "URL",
+                "pt": "msg",
+                "to": "finalUrl",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 270,
+        "y": 360,
+        "wires": [
+            [
+                "c16d905.25e967"
+            ]
+        ]
+    },
+    {
+        "id": "8c5c69379e52df5f",
+        "type": "debug",
+        "z": "b4775424.923ad8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "finalUrl",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1050,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "88f66004979bcba7",
+        "type": "inject",
+        "z": "b4775424.923ad8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 190,
+        "y": 60,
+        "wires": [
+            [
+                "aedaf9aaac7e6124"
+            ]
+        ]
+    },
+    {
+        "id": "aedaf9aaac7e6124",
+        "type": "function",
+        "z": "b4775424.923ad8",
+        "name": "function 2",
+        "func": "msg.payload = RED.dummy;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 60,
+        "wires": [
+            [
+                "19d9b37d1b581b9b"
+            ]
+        ]
+    },
+    {
+        "id": "19d9b37d1b581b9b",
+        "type": "debug",
+        "z": "b4775424.923ad8",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 520,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "b268f430fae36b67",
+        "type": "change",
+        "z": "b4775424.923ad8",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 190,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "18fa45e.dd993ba",
+        "type": "debug",
+        "z": "1cf04cea2bf651f2",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 1090,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "d649825e.ab13d",
+        "type": "inject",
+        "z": "1cf04cea2bf651f2",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 710,
+        "y": 240,
+        "wires": [
+            [
+                "3197e4b9.85addc"
+            ]
+        ]
+    },
+    {
+        "id": "3197e4b9.85addc",
+        "type": "func-exec",
+        "z": "1cf04cea2bf651f2",
+        "name": "",
+        "func": "var exec = child_process.exec('dir', (error, stdout, stderr) => { \n    if (error) { \n    console.error(`exec error: ${error}`); \n    return; \n    } \n    console.log(`stdout: ${stdout}`); \n    console.log(`stderr: ${stderr}`); \n    msg.payload = stdout;\n    callback(msg);\n}); ",
+        "outputs": 1,
+        "noerr": 7,
+        "x": 900,
+        "y": 240,
+        "wires": [
+            [
+                "18fa45e.dd993ba"
+            ]
+        ]
+    },
+    {
+        "id": "660bb503.b22aec",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": " Decode array",
+        "func": "//   The message returned from the read node is an\n// array as there could be multiple registers returned\n//   This reads the first value in the array.\ntank1Level = msg.payload.data[0]\ntank2Level = msg.payload.data[1]\ntank1Start = msg.payload.data[2]\ntank1Stop = msg.payload.data[3]\ntank2Start = msg.payload.data[4]\ntank2Stop = msg.payload.data[5]\n\nglobal.set(\"tank1Level\",tank1Level);\nglobal.set(\"tank2Level\",tank2Level);\nglobal.set(\"tank1Start\",tank1Start);\nglobal.set(\"tank1Stop\",tank1Stop);\nglobal.set(\"tank2Start\",tank2Start);\nglobal.set(\"tank2Stop\",tank2Stop);\n\ntank1HStp = (tank1Start - 15);\ntank1LStp = (tank1Stop + 15);\ntank2HStp = (tank1Start - 15);\ntank2LStp = (tank1Stop + 15);\n\nvar msg1 = { payload:tank1Level};\nvar msg2 = { payload:tank2Level};\nvar msg3 = { payload:tank1Start};\nvar msg4 = { payload:tank1Stop};\nvar msg5 = { payload:tank2Start};\nvar msg6 = { payload:tank2Stop};\nvar msg7 = { payload:tank1HStp};\nvar msg8 = { payload:tank1LStp};\nvar msg9 = { payload:tank2HStp};\nvar msg10 = { payload:tank2LStp};\n\n\n\n\nreturn [ msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10 ];\n",
+        "outputs": "10",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 444.78684997558594,
+        "y": 421.7841491699219,
+        "wires": [
+            [
+                "49c3c886.f87b8",
+                "55a1e5af.309f4c",
+                "e3a629eb.ea149",
+                "130b2744.d7a7e9"
+            ],
+            [
+                "a220c3a8.9f661",
+                "ba9b90ce.1265f",
+                "52d386d.840acf8",
+                "f4f81b9e.9ad468"
+            ],
+            [
+                "143d5853.9a45"
+            ],
+            [
+                "c4027384.f6e86"
+            ],
+            [
+                "d7218949.295b28"
+            ],
+            [
+                "50816a10.d0b244"
+            ],
+            [
+                "560d158e.ab437c"
+            ],
+            [
+                "4fb126cd.3aa7d"
+            ],
+            [
+                "b1be0261.faeee8"
+            ],
+            [
+                "b849217b.86a418"
+            ]
+        ]
+    },
+    {
+        "id": "22edeef9.fe580a",
+        "type": "debug",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 801.0000152587891,
+        "y": 1271.0000882148743,
+        "wires": []
+    },
+    {
+        "id": "2f70edf9.23ebb2",
+        "type": "inject",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 388.00001525878906,
+        "y": 1271.0000882148743,
+        "wires": [
+            [
+                "720b3e7.a7278c"
+            ]
+        ]
+    },
+    {
+        "id": "89dc5d01.48f748",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Modbus Slave sim device",
+        "info": "",
+        "x": 416.7000255584717,
+        "y": 1228.00009059906,
+        "wires": []
+    },
+    {
+        "id": "e0707a69.906d2",
+        "type": "debug",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1388.9491653442383,
+        "y": 572.7337145805359,
+        "wires": []
+    },
+    {
+        "id": "65e81333.7ce74c",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "pump 1 simulator",
+        "func": "//   The message returned from the read node is an\n// array as there could be multiple registers returned\n//   This reads the first value in the array.\nvar tankLevel = global.get(\"tank1Level\");\nvar pumpStatus = global.get(\"pump1Status\");\nvar pump2Status = global.get(\"pump2Status\");\n\n\nif (pumpStatus === true && tankLevel < 240)\n{\n    if (pump2Status === true) \n    {\n        tankLevel = tankLevel + 1; \n        msg.payload = { value: tankLevel, \n        'fc': 6,\n        'unitid': 1, \n        'address': 1,\n        'quantity': 1 } \n        return msg\n    }\n    else\n    {\n        tankLevel = tankLevel + 6; \n        msg.payload = { value: tankLevel, \n        'fc': 6,\n        'unitid': 1, \n        'address': 1,\n        'quantity': 1 } \n        return msg\n    }\n}   \nelse if (pumpStatus === false && tankLevel > 4)\n{\n    if (pump2Status === true) \n    {\n        tankLevel = tankLevel + -6; \n        msg.payload = { value: tankLevel, \n        'fc': 6,\n        'unitid': 1, \n        'address': 1,\n        'quantity': 1 } \n        return msg \n    }\n    else\n    {\n        tankLevel = tankLevel + -2; \n        msg.payload = { value: tankLevel, \n        'fc': 6,\n        'unitid': 1, \n        'address': 1,\n        'quantity': 1 } \n        return msg \n    }\n    \n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 554.0665893554688,
+        "y": 1109.333279132843,
+        "wires": [
+            [
+                "1b900cb2.8100d3"
+            ]
+        ]
+    },
+    {
+        "id": "d160b042.20e8d",
+        "type": "inject",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 377.23329162597656,
+        "y": 1124.9999051094055,
+        "wires": [
+            [
+                "65e81333.7ce74c",
+                "ee4bba80.dd2c1"
+            ]
+        ]
+    },
+    {
+        "id": "a9f807ab.445d4",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Coil 2",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 5,\n'unitid': 1, \n'address': 2,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1060.2332382202148,
+        "y": 440.0001788139343,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "59532462.61a4f4",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Coil 1",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 5,\n'unitid': 1, \n'address': 1,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060.3998641967773,
+        "y": 402.3334918022156,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "3a9de7f6.babdb",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Coil 3",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 5,\n'unitid': 1, \n'address': 4,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1057.3998794555664,
+        "y": 602.8337359428406,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "acc8b845.c10238",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Coil 3",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 5,\n'unitid': 1, \n'address': 3,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1056.566505432129,
+        "y": 565.1671099662781,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "a088702f.37e718",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": " Decode array",
+        "func": "// get the modbus values from the array\npump1Mode = msg.payload.data[0]\npump1Status = msg.payload.data[1]\npump2Mode = msg.payload.data[2]\npump2Status = msg.payload.data[3]\n\n//set global context variables for the simulator\nglobal.set(\"pump1Mode\",pump1Mode);\nglobal.set(\"pump1Status\",pump1Status);\nglobal.set(\"pump2Mode\",pump2Mode);\nglobal.set(\"pump2Status\",pump2Status);\n\n//Set up text for the statuses\nif (pump1Mode)\n    {\n    p1MText = 'Auto';\n    }\nelse\n    {\n    p1MText = 'Manual';\n    }\n    \nif (pump1Status)\n    {\n    p1SText = 'Running';\n    }\nelse\n    {\n    p1SText = 'Stopped';\n    }\n    \nif (pump2Mode)\n    {\n    p2MText = 'Auto';\n    }\nelse\n    {\n    p2MText = 'Manual';\n    }\n    \nif (pump2Status)\n    {\n    p2SText = 'Running';\n    }\nelse\n    {\n    p2SText = 'Stopped';\n    }\n    \n//set up the outgoing messages\nvar msg1 = { payload:p1MText};\nvar msg2 = { payload:p1SText};\nvar msg3 = { payload:p2MText};\nvar msg4 = { payload:p2SText};\nvar msg5 = { payload:pump1Mode};\nvar msg6 = { payload:pump1Status};\nvar msg7 = { payload:pump2Mode};\nvar msg8 = { payload:pump2Status};\n\n\n\nreturn [ msg1, msg2, msg3, msg4, msg5, msg6, msg7, msg8 ];\n",
+        "outputs": "8",
+        "noerr": 28,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 431.52020263671875,
+        "y": 719.1174921989441,
+        "wires": [
+            [
+                "4f5ef788.4e5fd8"
+            ],
+            [
+                "44fdb46d.e824e4"
+            ],
+            [
+                "ffe7dba5.bf9d9"
+            ],
+            [
+                "1757e22b.08ba1e"
+            ],
+            [
+                "50db2e50.99014"
+            ],
+            [
+                "77748bba.cd8934"
+            ],
+            [
+                "6a49013c.a9316"
+            ],
+            [
+                "771f5b0.f3bdca4"
+            ]
+        ]
+    },
+    {
+        "id": "8e10b238.58359",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Level Simulator",
+        "info": "",
+        "x": 401.2332763671875,
+        "y": 1071.9999661445618,
+        "wires": []
+    },
+    {
+        "id": "4df0fc34.f79e34",
+        "type": "debug",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "active": false,
+        "console": "false",
+        "complete": "false",
+        "x": 1194.0666694641113,
+        "y": 1076.6666312217712,
+        "wires": []
+    },
+    {
+        "id": "66d4f093.f28ac",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "pump 2 simulator",
+        "func": "//   The message returned from the read node is an\n// array as there could be multiple registers returned\n//   This reads the first value in the array.\nvar tank1Level = global.get(\"tank1Level\");\nvar tankLevel = global.get(\"tank2Level\");\nvar pumpStatus = global.get(\"pump2Status\");\n\n\nif (pumpStatus === true && tankLevel < 240 && tank1Level > 3)\n{\n    tankLevel = tankLevel + 6; \n    msg.payload = { value: tankLevel, \n    'fc': 6,\n    'unitid': 1, \n    'address': 2,\n    'quantity': 1 } \n    return msg \n}   \nelse if (pumpStatus === false && tankLevel > 0)\n{\n    tankLevel = tankLevel + -2; \n    msg.payload = { value: tankLevel, \n    'fc': 6,\n    'unitid': 1, \n    'address': 2,\n    'quantity': 1 } \n    return msg \n}",
+        "outputs": "1",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 728.0666046142578,
+        "y": 1148.3331265449524,
+        "wires": [
+            [
+                "1b900cb2.8100d3"
+            ]
+        ]
+    },
+    {
+        "id": "9697b148.83f408",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Hld 3",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 6,\n'unitid': 1, \n'address': 3,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1109.066551208496,
+        "y": 475.3333697319031,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "4e695501.48ccac",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Hld 4",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 6,\n'unitid': 1, \n'address': 4,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1110.066551208496,
+        "y": 511.33333921432495,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "ef212684.39b1f",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Hld 5",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 6,\n'unitid': 1, \n'address': 5,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1106.066551208496,
+        "y": 639.333339214325,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "218b0e82.825eb2",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Hld 6",
+        "func": "msg.payload = { value: msg.payload, \n'fc': 6,\n'unitid': 1, \n'address': 6,\n'quantity': 1 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1107.066551208496,
+        "y": 675.3333086967468,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "ee4bba80.dd2c1",
+        "type": "delay",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "300",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "outputs": 1,
+        "x": 534.2332611083984,
+        "y": 1148.9998440742493,
+        "wires": [
+            [
+                "66d4f093.f28ac"
+            ]
+        ]
+    },
+    {
+        "id": "f72dd87.4a3c7a8",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Automatic Logic",
+        "info": "",
+        "x": 962.0666580200195,
+        "y": 757.3332018852234,
+        "wires": []
+    },
+    {
+        "id": "e13b9450.9ce78",
+        "type": "inject",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 929.0666580200195,
+        "y": 808.3330798149109,
+        "wires": [
+            [
+                "07de60fe2c1e7402"
+            ]
+        ]
+    },
+    {
+        "id": "d0e0405.d8a6cc",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "pump 1 auto",
+        "func": "//   The message returned from the read node is an\n// array as there could be multiple registers returned\n//   This reads the first value in the array.\nvar tankLevel = global.get(\"tank1Level\");\nvar pumpMode = global.get(\"pump1Mode\");\nvar pumpStatus = global.get(\"pump1Status\");\nvar tankStart = global.get(\"tank1Start\");\nvar tankStop = global.get(\"tank1Stop\");\n\nif (pumpMode === true && pumpStatus === false && tankLevel <= tankStart)\n{\n    msg.payload = { value: true, \n    'fc': 5,\n    'unitid': 1, \n    'address': 2,\n    'quantity': 1 } \n    return msg\n}\nelse if (pumpMode === true && pumpStatus === true && tankLevel >= tankStop)\n{\n    msg.payload = { value: false, \n    'fc': 5,\n    'unitid': 1, \n    'address': 2,\n    'quantity': 1 } \n    return msg\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 680,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "46e6edbe.12d92c",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "pump 2 auto",
+        "func": "//   The message returned from the read node is an\n// array as there could be multiple registers returned\n//   This reads the first value in the array.\nvar tankLevel = global.get(\"tank2Level\");\nvar pumpMode = global.get(\"pump2Mode\");\nvar pumpStatus = global.get(\"pump2Status\");\nvar tankStart = global.get(\"tank2Start\");\nvar tankStop = global.get(\"tank2Stop\");\n\n\nif (pumpMode === true && pumpStatus === false && tankLevel <= tankStart)\n{\n    msg.payload = { value: true, \n    'fc': 5,\n    'unitid': 1, \n    'address': 4,\n    'quantity': 1 } \n    return msg\n}\nelse if (pumpMode === true && pumpStatus === true && tankLevel >= tankStop)\n{\n    msg.payload = { value: false, \n    'fc': 5,\n    'unitid': 1, \n    'address': 4,\n    'quantity': 1 } \n    return msg\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 740,
+        "wires": [
+            [
+                "e0574d1f.547848"
+            ]
+        ]
+    },
+    {
+        "id": "3ef0307a.718e88",
+        "type": "inject",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 377.2333526611328,
+        "y": 967.6667141914368,
+        "wires": [
+            [
+                "10682cef.4f3be3",
+                "a33c255f.ab5138"
+            ]
+        ]
+    },
+    {
+        "id": "97d4d6d6.f6064",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Startup Values",
+        "func": "msg.payload = { value:[false, false, false, false], \n'fc': 15, \n'unitid': 1, \n'address': 0, \n'quantity': 4 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 718.066650390625,
+        "y": 968.3334012031555,
+        "wires": [
+            [
+                "1b900cb2.8100d3"
+            ]
+        ]
+    },
+    {
+        "id": "10682cef.4f3be3",
+        "type": "delay",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "outputs": 1,
+        "x": 536.2333374023438,
+        "y": 968.0000882148743,
+        "wires": [
+            [
+                "97d4d6d6.f6064"
+            ]
+        ]
+    },
+    {
+        "id": "2d547ec5.a27d52",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "Startup Values",
+        "func": "msg.payload = { value:[180,180,150,200,150,200], \n'fc': 16, \n'unitid': 1, \n'address': 1, \n'quantity': 6 } \nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 718.066650390625,
+        "y": 1004.3334012031555,
+        "wires": [
+            [
+                "1b900cb2.8100d3"
+            ]
+        ]
+    },
+    {
+        "id": "a33c255f.ab5138",
+        "type": "delay",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "6",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "outputs": 1,
+        "x": 536.2333374023438,
+        "y": 1004.0000882148743,
+        "wires": [
+            [
+                "2d547ec5.a27d52"
+            ]
+        ]
+    },
+    {
+        "id": "55c22273.da3ae4",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Read Me for Register Info",
+        "info": "Coils\n1 Pump 1 Mode\n2 pump 1 Run Status\n3 Pump 2 Mode\n4 Pump 2 Run Status\n\nHolding Registers\n40001 Tank 1 Level\n40002 Tank 1 Start Setpoint\n40003 Tank 1 Stop Setpoint\n40004 Tank 2 Level\n40005 Tank 2 Start Setpoint\n40006 Tank 2 Stop Setpoint\n",
+        "x": 419.61669921875,
+        "y": 248.88336181640625,
+        "wires": []
+    },
+    {
+        "id": "56417c7f.53490c",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Modbus read, write and dashboard icons",
+        "info": "\n",
+        "x": 471.90003967285156,
+        "y": 211.16668701171875,
+        "wires": []
+    },
+    {
+        "id": "39a0ce33.43792a",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Startup Sim Values",
+        "info": "",
+        "x": 409.00001525878906,
+        "y": 934.5334134101868,
+        "wires": []
+    },
+    {
+        "id": "130b2744.d7a7e9",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "notification",
+        "func": "lvl = msg.payload\nmsg.topic = 'Tank 1 Alarm';\nvar tank1Alarm = global.get(\"tank1Alarm\");\nvar tank1Start = global.get(\"tank1Start\");\nvar tank1Stop = global.get(\"tank1Stop\");\n    \nif (lvl > (tank1Stop + 15))\n{\n    msg.payload = 'Tank 1 Level High Alarm';\n}\nelse if (lvl < (tank1Start - 15))\n{\n    msg.payload = 'Tank 1 Level Low Alarm'; \n}\nelse\n{\n      msg.payload = 'Tank 1 Alarm Clear';  \n}\n\nif (msg.payload != tank1Alarm)\n{\n    global.set(\"tank1Alarm\",msg.payload);\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 3,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1018.4834632873535,
+        "y": 167.96669149398804,
+        "wires": [
+            [
+                "23512bab.734fac",
+                "389aabdc.4c980c"
+            ]
+        ]
+    },
+    {
+        "id": "f4f81b9e.9ad468",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "notification",
+        "func": "lvl = msg.payload\nmsg.topic = 'Tank 2 Alarm';\nvar tank2Alarm = global.get(\"tank2Alarm\");\nvar tank2Start = global.get(\"tank2Start\");\nvar tank2Stop = global.get(\"tank2Stop\");\n    \nif (lvl > (tank2Stop + 15))    \n{\n    msg.payload = 'Tank 2 Level High Alarm';\n}\nelse if (lvl < (tank2Start - 15))\n{\n    msg.payload = 'Tank 2 Level Low Alarm'; \n}\nelse\n{\n      msg.payload = 'Tank 2 Alarm Clear';  \n}\n\nif (msg.payload != tank2Alarm)\n{\n    global.set(\"tank2Alarm\",msg.payload);\n    return msg;\n}",
+        "outputs": 1,
+        "noerr": 3,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1016.9834213256836,
+        "y": 201.03333044052124,
+        "wires": [
+            [
+                "6e205664.eb0258",
+                "389aabdc.4c980c"
+            ]
+        ]
+    },
+    {
+        "id": "61603830.6a2208",
+        "type": "comment",
+        "z": "940a30404ec7aba2",
+        "name": "Alarming",
+        "info": "\n",
+        "x": 972.7336044311523,
+        "y": 109.00003623962402,
+        "wires": []
+    },
+    {
+        "id": "696d50f6.b9a7f",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "func": "\nif (msg.payload == 1)\n{\n    global.set(\"enable\", 1);\n   // return msg;\n}\nelse\n{\n    global.set(\"enable\", 0);     \n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1327.0000762939453,
+        "y": 91.9999885559082,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "389aabdc.4c980c",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "func": "var enable = global.get(\"enable\");\n\nif (enable == 1)\n{\n    return msg;\n}\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1204.999984741211,
+        "y": 130.0000123977661,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fcc84f3d.be1f6",
+        "type": "modbus-read",
+        "z": "940a30404ec7aba2",
+        "name": "Read Holding Registers",
+        "topic": "",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "1",
+        "quantity": "6",
+        "rate": "500",
+        "rateUnit": "ms",
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "server": "4412ae43.cdf648",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 420,
+        "y": 300,
+        "wires": [
+            [],
+            [
+                "660bb503.b22aec"
+            ]
+        ]
+    },
+    {
+        "id": "6c0935f1.938834",
+        "type": "modbus-read",
+        "z": "940a30404ec7aba2",
+        "name": "Read Coils",
+        "topic": "",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "Coil",
+        "adr": "1",
+        "quantity": "6",
+        "rate": "500",
+        "rateUnit": "ms",
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "server": "4412ae43.cdf648",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 386.7333679199219,
+        "y": 609.3333878517151,
+        "wires": [
+            [],
+            [
+                "a088702f.37e718"
+            ]
+        ]
+    },
+    {
+        "id": "e0574d1f.547848",
+        "type": "modbus-flex-write",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "server": "4412ae43.cdf648",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 1374.2332229614258,
+        "y": 529.3335680961609,
+        "wires": [
+            [],
+            [
+                "e0707a69.906d2"
+            ]
+        ]
+    },
+    {
+        "id": "1b900cb2.8100d3",
+        "type": "modbus-flex-write",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "showStatusActivities": false,
+        "showErrors": true,
+        "server": "4412ae43.cdf648",
+        "x": 986.3507614135742,
+        "y": 1070.2664847373962,
+        "wires": [
+            [],
+            [
+                "4df0fc34.f79e34"
+            ]
+        ]
+    },
+    {
+        "id": "720b3e7.a7278c",
+        "type": "modbus-server",
+        "z": "940a30404ec7aba2",
+        "name": "Modbus Server",
+        "logEnabled": false,
+        "hostname": "",
+        "serverPort": "502",
+        "responseDelay": 100,
+        "delayUnit": "ms",
+        "coilsBufferSize": 1024,
+        "holdingBufferSize": 1024,
+        "inputBufferSize": 1024,
+        "discreteBufferSize": "",
+        "showErrors": false,
+        "x": 577.0000152587891,
+        "y": 1271.0000882148743,
+        "wires": [
+            [
+                "22edeef9.fe580a"
+            ],
+            [
+                "22edeef9.fe580a"
+            ],
+            [
+                "22edeef9.fe580a"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "77748bba.cd8934",
+        "type": "ui_switch",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "912c5aef.7152f",
+        "order": 4,
+        "onvalue": "true",
+        "offvalue": "false",
+        "x": 931.2332077026367,
+        "y": 439.8333697319031,
+        "wires": [
+            [
+                "a9f807ab.445d4"
+            ]
+        ]
+    },
+    {
+        "id": "50db2e50.99014",
+        "type": "ui_switch",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "912c5aef.7152f",
+        "order": 3,
+        "onvalue": "true",
+        "offvalue": "false",
+        "x": 930.3998641967773,
+        "y": 402.3334307670593,
+        "wires": [
+            [
+                "59532462.61a4f4"
+            ]
+        ]
+    },
+    {
+        "id": "771f5b0.f3bdca4",
+        "type": "ui_switch",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "4025c129.a588a8",
+        "order": 4,
+        "onvalue": "true",
+        "offvalue": "false",
+        "x": 927.3998489379883,
+        "y": 602.6669268608093,
+        "wires": [
+            [
+                "3a9de7f6.babdb"
+            ]
+        ]
+    },
+    {
+        "id": "6a49013c.a9316",
+        "type": "ui_switch",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "4025c129.a588a8",
+        "order": 3,
+        "onvalue": "true",
+        "offvalue": "false",
+        "x": 926.5665054321289,
+        "y": 565.1669878959656,
+        "wires": [
+            [
+                "acc8b845.c10238"
+            ]
+        ]
+    },
+    {
+        "id": "1ef97daf.f77c42",
+        "type": "ui_switch",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "EnableBtn",
+        "group": "34a91890.9fc56",
+        "order": 0,
+        "onvalue": "1",
+        "offvalue": "0",
+        "x": 1167.0001373291016,
+        "y": 92.0971908569336,
+        "wires": [
+            [
+                "696d50f6.b9a7f"
+            ]
+        ]
+    },
+    {
+        "id": "143d5853.9a45",
+        "type": "ui_numeric",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "912c5aef.7152f",
+        "order": 5,
+        "format": "{{value}}",
+        "min": "0",
+        "max": "230",
+        "x": 961.2332382202148,
+        "y": 474.6666522026062,
+        "wires": [
+            [
+                "9697b148.83f408"
+            ]
+        ]
+    },
+    {
+        "id": "c4027384.f6e86",
+        "type": "ui_numeric",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "912c5aef.7152f",
+        "order": 6,
+        "format": "{{value}}",
+        "min": "10",
+        "max": "240",
+        "x": 962.0665664672852,
+        "y": 511.0000262260437,
+        "wires": [
+            [
+                "4e695501.48ccac"
+            ]
+        ]
+    },
+    {
+        "id": "d7218949.295b28",
+        "type": "ui_numeric",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "4025c129.a588a8",
+        "order": 5,
+        "format": "{{value}}",
+        "min": "0",
+        "max": "230",
+        "x": 956.0665664672852,
+        "y": 639.333339214325,
+        "wires": [
+            [
+                "ef212684.39b1f"
+            ]
+        ]
+    },
+    {
+        "id": "50816a10.d0b244",
+        "type": "ui_numeric",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "topic": "",
+        "group": "4025c129.a588a8",
+        "order": 6,
+        "format": "{{value}}",
+        "min": "10",
+        "max": "240",
+        "x": 956.8998794555664,
+        "y": 675.6666522026062,
+        "wires": [
+            [
+                "218b0e82.825eb2"
+            ]
+        ]
+    },
+    {
+        "id": "49c3c886.f87b8",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "tab": "66634e5c.10174",
+        "name": "",
+        "group": "9bd788a1.b5bb98",
+        "order": 1,
+        "format": "{{msg.payload}}",
+        "x": 776.7000961303711,
+        "y": 152.3999514579773,
+        "wires": []
+    },
+    {
+        "id": "a220c3a8.9f661",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "tab": "66634e5c.10174",
+        "name": "",
+        "group": "7b6e0d6c.f51904",
+        "order": 1,
+        "format": "{{msg.payload}}",
+        "x": 775.7000961303711,
+        "y": 265.6665301322937,
+        "wires": []
+    },
+    {
+        "id": "4f5ef788.4e5fd8",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "912c5aef.7152f",
+        "order": 1,
+        "format": "{{msg.payload}}",
+        "x": 763.033519744873,
+        "y": 715.3998847007751,
+        "wires": []
+    },
+    {
+        "id": "ffe7dba5.bf9d9",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "4025c129.a588a8",
+        "order": 1,
+        "format": "{{msg.payload}}",
+        "x": 761.4001579284668,
+        "y": 788.9999823570251,
+        "wires": []
+    },
+    {
+        "id": "44fdb46d.e824e4",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "912c5aef.7152f",
+        "order": 2,
+        "format": "{{msg.payload}}",
+        "x": 762.4001579284668,
+        "y": 751.9999823570251,
+        "wires": []
+    },
+    {
+        "id": "1757e22b.08ba1e",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "4025c129.a588a8",
+        "order": 2,
+        "format": "{{msg.payload}}",
+        "x": 762.4001579284668,
+        "y": 826.9999823570251,
+        "wires": []
+    },
+    {
+        "id": "23512bab.734fac",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "9bd788a1.b5bb98",
+        "order": 6,
+        "format": "{{msg.payload}}",
+        "x": 1192.2335243225098,
+        "y": 167.5000777244568,
+        "wires": []
+    },
+    {
+        "id": "6e205664.eb0258",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "7b6e0d6c.f51904",
+        "order": 6,
+        "format": "{{msg.payload}}",
+        "x": 1192.7334823608398,
+        "y": 200.56671667099,
+        "wires": []
+    },
+    {
+        "id": "560d158e.ab437c",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "9bd788a1.b5bb98",
+        "order": 4,
+        "format": "{{msg.payload}}",
+        "x": 1201.233554840088,
+        "y": 234.00011587142944,
+        "wires": []
+    },
+    {
+        "id": "4fb126cd.3aa7d",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "9bd788a1.b5bb98",
+        "order": 5,
+        "format": "{{msg.payload}} ",
+        "x": 1200.4002723693848,
+        "y": 268.00011110305786,
+        "wires": []
+    },
+    {
+        "id": "b1be0261.faeee8",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "group": "7b6e0d6c.f51904",
+        "order": 4,
+        "format": "{{msg.payload}}",
+        "x": 1198.7335662841797,
+        "y": 302.00008726119995,
+        "wires": []
+    },
+    {
+        "id": "b849217b.86a418",
+        "type": "ui_text",
+        "z": "940a30404ec7aba2",
+        "tab": "66634e5c.10174",
+        "name": "",
+        "group": "7b6e0d6c.f51904",
+        "order": 5,
+        "format": "{{msg.payload}} ",
+        "x": 1197.900161743164,
+        "y": 336.00004529953003,
+        "wires": []
+    },
+    {
+        "id": "55a1e5af.309f4c",
+        "type": "ui_chart",
+        "z": "940a30404ec7aba2",
+        "tab": "66634e5c.10174",
+        "name": "Bar Chart",
+        "group": "9bd788a1.b5bb98",
+        "order": 3,
+        "interpolate": "linear",
+        "nodata": "",
+        "removeOlder": "10",
+        "removeOlderUnit": "60",
+        "x": 767.7000961303711,
+        "y": 186.6000247001648,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "ba9b90ce.1265f",
+        "type": "ui_chart",
+        "z": "940a30404ec7aba2",
+        "name": "Trend",
+        "group": "7b6e0d6c.f51904",
+        "order": 2,
+        "interpolate": "linear",
+        "nodata": "",
+        "removeOlder": "3",
+        "removeOlderUnit": "60",
+        "x": 757.7000961303711,
+        "y": 332.8666033744812,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "e3a629eb.ea149",
+        "type": "ui_chart",
+        "z": "940a30404ec7aba2",
+        "name": "Trend",
+        "group": "9bd788a1.b5bb98",
+        "order": 2,
+        "interpolate": "linear",
+        "nodata": "",
+        "removeOlder": "3",
+        "removeOlderUnit": "60",
+        "x": 759.0667343139648,
+        "y": 220.3333010673523,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "52d386d.840acf8",
+        "type": "ui_chart",
+        "z": "940a30404ec7aba2",
+        "tab": "66634e5c.10174",
+        "name": "Bar Chart",
+        "group": "7b6e0d6c.f51904",
+        "order": 3,
+        "interpolate": "linear",
+        "nodata": "",
+        "removeOlder": "10",
+        "removeOlderUnit": "60",
+        "x": 767.0667343139648,
+        "y": 299.3333086967468,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "8e5bde15d65d040b",
+        "type": "function",
+        "z": "940a30404ec7aba2",
+        "name": "attacker",
+        "func": "let sandtrap = flow.get(\"sandtrap\");\nlet path = flow.get(\"path\");\n\nlet policyPath = path.join(\"C:/Users/79244/.node-red/node_modules/sandtrap\", \"policies\");\nlet policy = new sandtrap.Policy.Basic.Policy(policyPath, \"quickstart\");\n\nlet box = new sandtrap.SandTrap(policy);\nconst code = `\n(function() {\nglobal.set(\"pump1Mode\", true);\nglobal.set(\"pump1Status\", true);\n\nvar tankStop = global.get(\"tank1Stop\");\nglobal.set(\"tank1Level\", tankStop);\n})();\n`;\n\nlet result = box.Eval(code);\nmsg = result;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1440,
+        "y": 920,
+        "wires": [
+            [
+                "d0e0405.d8a6cc",
+                "46e6edbe.12d92c"
+            ]
+        ]
+    },
+    {
+        "id": "5e3b2049d2d4662f",
+        "type": "require",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "module": "path",
+        "field": "path",
+        "fieldType": "flow",
+        "x": 1290,
+        "y": 920,
+        "wires": [
+            [
+                "8e5bde15d65d040b"
+            ]
+        ]
+    },
+    {
+        "id": "07de60fe2c1e7402",
+        "type": "require",
+        "z": "940a30404ec7aba2",
+        "name": "",
+        "module": "C:\\Users\\79244\\.node-red\\node_modules\\sandtrap\\index.js",
+        "field": "sandtrap",
+        "fieldType": "flow",
+        "x": 990,
+        "y": 920,
+        "wires": [
+            [
+                "5e3b2049d2d4662f"
+            ]
+        ]
+    },
+    {
+        "id": "e350110e.c7723",
+        "type": "function",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "func": "let sandtrap = flow.get(\"sandtrap\");\nlet path = flow.get(\"path\");\n\nlet policyPath = path.join(\"C:/Users/79244/.node-red/node_modules/sandtrap\", \"policies\");\nlet policy = new sandtrap.Policy.Basic.Policy(policyPath, \"quickstart\");\n\nlet box = new sandtrap.SandTrap(policy);\nconst code = `\n(function() {\n    var msg = {};\n    msg.payload = \"MESSAGE\";\n    return msg;\n})();\n`;\n//box.Eval(\"console.log('Hello World!');\");\nlet result = box.Eval(code);\nmsg = result;\nreturn msg;\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 360,
+        "wires": [
+            [
+                "6e4e7e39b5f40f27"
+            ]
+        ]
+    },
+    {
+        "id": "6e4e7e39b5f40f27",
+        "type": "lower-case",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "x": 1210,
+        "y": 360,
+        "wires": [
+            [
+                "39536746a8ce1a91"
+            ]
+        ]
+    },
+    {
+        "id": "19158601a18715c8",
+        "type": "inject",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 350,
+        "y": 360,
+        "wires": [
+            [
+                "527756100cd44eeb"
+            ]
+        ]
+    },
+    {
+        "id": "39536746a8ce1a91",
+        "type": "debug",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1440,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "edcae8d03feb6958",
+        "type": "require",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "module": "path",
+        "field": "path",
+        "fieldType": "flow",
+        "x": 730,
+        "y": 360,
+        "wires": [
+            [
+                "e350110e.c7723"
+            ]
+        ]
+    },
+    {
+        "id": "527756100cd44eeb",
+        "type": "require",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "module": "C:\\Users\\79244\\.node-red\\node_modules\\sandtrap\\index.js",
+        "field": "sandtrap",
+        "fieldType": "flow",
+        "x": 540,
+        "y": 480,
+        "wires": [
+            [
+                "edcae8d03feb6958"
+            ]
+        ]
+    },
+    {
+        "id": "40e62778a1acdc78",
+        "type": "function",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "func": "let sandtrap = flow.get(\"sandtrap\");\nlet path = flow.get(\"path\");\n\n\nlet policyPath = path.join(\"C:/Users/79244/.node-red/node_modules/sandtrap\", \"policies\");\nlet policy = new sandtrap.Policy.Basic.Policy(policyPath, \"quickstart\");\n\nlet box = new sandtrap.SandTrap(policy);\n\nconst code = `\nlet fs = require(\"fs\");\nfs.readFile('/etc/passwd', 'utf8', (err, data) => {\n  if (err) {\n    node.error(err);\n    return;\n  }\n});\n`;\nlet result = box.Eval(code);\nmsg = result;\nreturn msg;\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 600,
+        "wires": [
+            [
+                "334e90e4e6163440"
+            ]
+        ]
+    },
+    {
+        "id": "334e90e4e6163440",
+        "type": "lower-case",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "x": 1190,
+        "y": 600,
+        "wires": [
+            [
+                "5084d147814a54e9"
+            ]
+        ]
+    },
+    {
+        "id": "053b2a09f743aadc",
+        "type": "inject",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 350,
+        "y": 600,
+        "wires": [
+            [
+                "9d01301c997cd539"
+            ]
+        ]
+    },
+    {
+        "id": "5084d147814a54e9",
+        "type": "debug",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1420,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "52da36b68f136db3",
+        "type": "require",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "module": "path",
+        "field": "path",
+        "fieldType": "flow",
+        "x": 730,
+        "y": 600,
+        "wires": [
+            [
+                "40e62778a1acdc78"
+            ]
+        ]
+    },
+    {
+        "id": "9d01301c997cd539",
+        "type": "require",
+        "z": "4b3e51d16b2d6bf9",
+        "name": "",
+        "module": "C:\\Users\\79244\\.node-red\\node_modules\\sandtrap\\index.js",
+        "field": "sandtrap",
+        "fieldType": "flow",
+        "x": 540,
+        "y": 700,
+        "wires": [
+            [
+                "52da36b68f136db3"
+            ]
+        ]
+    },
+    {
+        "id": "a9c9bb0e5b041d8c",
+        "type": "inject",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 630,
+        "y": 520,
+        "wires": [
+            [
+                "73fc0fff3e3e9c97"
+            ]
+        ]
+    },
+    {
+        "id": "73fc0fff3e3e9c97",
+        "type": "e-mail",
+        "z": "208e60e1374e23c3",
+        "server": "smtp.gmail.com",
+        "port": "465",
+        "authtype": "BASIC",
+        "saslformat": true,
+        "token": "oauth2Response.access_token",
+        "secure": true,
+        "tls": true,
+        "name": "yukunzou@kth.se",
+        "dname": "",
+        "x": 860,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "e3f69e66703c1dcd",
+        "type": "inject",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "363c480e9a87d0d6"
+            ]
+        ]
+    },
+    {
+        "id": "4b614dd1142ce14d",
+        "type": "function",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "func": "let sandtrap = flow.get(\"sandtrap\");\nlet path = flow.get(\"path\");\nlet root = \"C:/Users/79244/.node-red\";\n\nlet policyPath = \"C:/Users/79244/node_modules/node-red-node-email\";\nlet policy = new sandtrap.Policy.Basic.Policy(policyPath, \"quickstart\");\n\nlet box = new sandtrap.SandTrap(policy);\n\n//let moduleFilePath = path.resolve(policyPath, \"61-email\");\nlet r = box.LoadAsModule(\"61-email.js\");\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a0946683a5f7abe2",
+        "type": "require",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "module": "path",
+        "field": "path",
+        "fieldType": "flow",
+        "x": 1010,
+        "y": 320,
+        "wires": [
+            [
+                "4b614dd1142ce14d"
+            ]
+        ]
+    },
+    {
+        "id": "363c480e9a87d0d6",
+        "type": "require",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "module": "C:\\Users\\79244\\.node-red\\node_modules\\sandtrap\\index.js",
+        "field": "sandtrap",
+        "fieldType": "flow",
+        "x": 820,
+        "y": 420,
+        "wires": [
+            [
+                "a0946683a5f7abe2"
+            ]
+        ]
+    },
+    {
+        "id": "997458b0146981e0",
+        "type": "dropbox out",
+        "z": "95a90f5efee7f651",
+        "dropbox": "0a662fecd0c2e4dc",
+        "filename": "test",
+        "localFilename": "test.txt",
+        "name": "",
+        "x": 1050,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "99b6681bd6587686",
+        "type": "inject",
+        "z": "95a90f5efee7f651",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 810,
+        "y": 380,
+        "wires": [
+            [
+                "997458b0146981e0"
+            ]
+        ]
+    },
+    {
+        "id": "ab5e7265c3e716fa",
+        "type": "inject",
+        "z": "95a90f5efee7f651",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 490,
+        "y": 160,
+        "wires": [
+            [
+                "bf51814ffbd6ec47"
+            ]
+        ]
+    },
+    {
+        "id": "c5aac6a33d44624d",
+        "type": "function",
+        "z": "95a90f5efee7f651",
+        "name": "",
+        "func": "let sandtrap = flow.get(\"sandtrap\");\nlet path = flow.get(\"path\");\nlet root = \"C:/Users/79244/.node-red\";\n// let policyFile = path.basename(\n//     node.file.slice(root.length).replace(/\\//g, \"-\")\n// );\n// let relativePath = path.relative(root, node.file);\n// let policyFile = relativePath.replace(/\\//g, \"-\");\n\n// let policyPath = path.join(root, \"policies\", policyFile);\n// //let policyPath = path.join(\"E:/node-red/node_modules/sandtrap\", \"policies\");\n// let policy = new sandtrap.Policy.Basic.Policy(policyPath, policyFile + \".policy\");\n\nlet policyPath = \"C:\\Users\\79244\\.node-red\\node_modules\\node-red-node-dropbox\";\nlet policy = new sandtrap.Policy.Basic.Policy(policyPath, \"quickstart\");\n\nlet box = new sandtrap.SandTrap(policy);\n\n//let moduleFilePath = path.resolve(policyPath, \"61-email\");\nlet r = box.LoadAsModule(\"dropbox.js\");\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1330,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b6dec9079be7a6d8",
+        "type": "require",
+        "z": "95a90f5efee7f651",
+        "name": "",
+        "module": "path",
+        "field": "path",
+        "fieldType": "flow",
+        "x": 1110,
+        "y": 140,
+        "wires": [
+            [
+                "c5aac6a33d44624d"
+            ]
+        ]
+    },
+    {
+        "id": "bf51814ffbd6ec47",
+        "type": "require",
+        "z": "95a90f5efee7f651",
+        "name": "",
+        "module": "C:\\Users\\79244\\.node-red\\node_modules\\sandtrap\\index.js",
+        "field": "sandtrap",
+        "fieldType": "flow",
+        "x": 920,
+        "y": 240,
+        "wires": [
+            [
+                "b6dec9079be7a6d8"
+            ]
+        ]
+    }
+]

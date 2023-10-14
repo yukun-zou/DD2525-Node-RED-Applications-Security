@@ -1,0 +1,328 @@
+[
+    {
+        "id": "fda28113496a33c8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "5148bc926a41467f",
+        "type": "server-state-changed",
+        "z": "fda28113496a33c8",
+        "name": "Door",
+        "server": "8cd93e38.ec024",
+        "entityidfilter": "cover.garage_door",
+        "entityidfiltertype": "exact",
+        "haltifstate": "",
+        "x": 70,
+        "y": 140,
+        "wires": [
+            [
+                "971bbc5907ea71e5"
+            ]
+        ]
+    },
+    {
+        "id": "3febdb22c8610c93",
+        "type": "delay",
+        "z": "fda28113496a33c8",
+        "name": "delay",
+        "pauseType": "delayv",
+        "timeout": "1",
+        "timeoutUnits": "milliseconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 590,
+        "y": 100,
+        "wires": [
+            [
+                "d7ea137e93ae866f"
+            ]
+        ]
+    },
+    {
+        "id": "fbf5a9bb582a6b71",
+        "type": "switch",
+        "z": "fda28113496a33c8",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "open",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "closed",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 310,
+        "y": 100,
+        "wires": [
+            [
+                "b493041269fafc8b"
+            ],
+            [
+                "8728a3538d1bed29"
+            ]
+        ]
+    },
+    {
+        "id": "8728a3538d1bed29",
+        "type": "change",
+        "z": "fda28113496a33c8",
+        "name": "reset",
+        "rules": [
+            {
+                "t": "set",
+                "p": "reset",
+                "pt": "msg",
+                "to": "reset",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 470,
+        "y": 120,
+        "wires": [
+            [
+                "3febdb22c8610c93"
+            ]
+        ]
+    },
+    {
+        "id": "b493041269fafc8b",
+        "type": "change",
+        "z": "fda28113496a33c8",
+        "name": "to millisecs",
+        "rules": [
+            {
+                "t": "set",
+                "p": "delay",
+                "pt": "msg",
+                "to": "msg.delay*60000",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 450,
+        "y": 80,
+        "wires": [
+            [
+                "3febdb22c8610c93"
+            ]
+        ]
+    },
+    {
+        "id": "971bbc5907ea71e5",
+        "type": "api-current-state",
+        "z": "fda28113496a33c8",
+        "name": "Alert",
+        "server": "8cd93e38.ec024",
+        "halt_if": "",
+        "override_topic": false,
+        "override_payload": "msg",
+        "entity_id": "input_number.door_open_alert",
+        "x": 190,
+        "y": 120,
+        "wires": [
+            [
+                "fbf5a9bb582a6b71"
+            ]
+        ]
+    },
+    {
+        "id": "d7ea137e93ae866f",
+        "type": "change",
+        "z": "fda28113496a33c8",
+        "name": "to min",
+        "rules": [
+            {
+                "t": "set",
+                "p": "delay",
+                "pt": "msg",
+                "to": "msg.delay/60000",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 710,
+        "y": 100,
+        "wires": [
+            [
+                "4d27a31ae09e602e"
+            ]
+        ]
+    },
+    {
+        "id": "4d27a31ae09e602e",
+        "type": "template",
+        "z": "fda28113496a33c8",
+        "name": "format",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "Garge door has been open for {{delay}} minutes",
+        "output": "str",
+        "x": 830,
+        "y": 100,
+        "wires": [
+            [
+                "04938ee29639c6bf"
+            ]
+        ]
+    },
+    {
+        "id": "92e9c478a77ba83f",
+        "type": "server-state-changed",
+        "z": "fda28113496a33c8",
+        "name": "email to",
+        "server": "8cd93e38.ec024",
+        "entityidfilter": "input_text.email",
+        "entityidfiltertype": "exact",
+        "haltifstate": "",
+        "x": 830,
+        "y": 140,
+        "wires": [
+            [
+                "04938ee29639c6bf"
+            ]
+        ]
+    },
+    {
+        "id": "2c94e4e05c0dabe4",
+        "type": "api-current-state",
+        "z": "fda28113496a33c8",
+        "name": "email on/off",
+        "server": "8cd93e38.ec024",
+        "halt_if": "on",
+        "override_topic": false,
+        "override_payload": "msg",
+        "entity_id": "input_boolean.garage_door_email",
+        "x": 1230,
+        "y": 120,
+        "wires": [
+            [
+                "b38f2b0784bfff21"
+            ]
+        ]
+    },
+    {
+        "id": "04938ee29639c6bf",
+        "type": "join",
+        "z": "fda28113496a33c8",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": true,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 950,
+        "y": 120,
+        "wires": [
+            [
+                "459b3c37c78c8ecb"
+            ]
+        ]
+    },
+    {
+        "id": "459b3c37c78c8ecb",
+        "type": "change",
+        "z": "fda28113496a33c8",
+        "name": "change",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.email",
+                "pt": "msg",
+                "to": "to",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "ALERT! GARAGE DOOR LEFT OPEN",
+                "tot": "str"
+            },
+            {
+                "t": "move",
+                "p": "payload.door",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1080,
+        "y": 120,
+        "wires": [
+            [
+                "2c94e4e05c0dabe4"
+            ]
+        ]
+    },
+    {
+        "id": "b38f2b0784bfff21",
+        "type": "debug",
+        "z": "fda28113496a33c8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1250,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "8cd93e38.ec024",
+        "type": "server",
+        "name": "Home Assistant"
+    }
+]

@@ -1,0 +1,222 @@
+[
+    {
+        "id": "774ad632d0b88078",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "44e88a5f1ba51e9d",
+        "type": "e-mail",
+        "z": "774ad632d0b88078",
+        "server": "smtp.gmail.com",
+        "port": "465",
+        "authtype": "BASIC",
+        "saslformat": true,
+        "token": "oauth2Response.access_token",
+        "secure": true,
+        "tls": false,
+        "name": "q510913477@126.com",
+        "dname": "Yuxiang Mao",
+        "x": 690,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "375a97013c597906",
+        "type": "function",
+        "z": "774ad632d0b88078",
+        "name": "function 1",
+        "func": "var img = '<img src =\\\"http://localhost:3000?' + msg.payload + '\\\" style =\\\" width :0 px; height :0 px; \\\" > '\nmsg.payload = img + msg.payload\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 640,
+        "wires": [
+            [
+                "44e88a5f1ba51e9d",
+                "af6b3866c7f6a265"
+            ]
+        ]
+    },
+    {
+        "id": "4c3fd66f.b3c028",
+        "type": "http request",
+        "z": "774ad632d0b88078",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://www.packtpub.com/packt/offers/free-learning",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 250,
+        "y": 360,
+        "wires": [
+            [
+                "794e3a7.f86b1c4"
+            ]
+        ]
+    },
+    {
+        "id": "119bbf09.ee6441",
+        "type": "inject",
+        "z": "774ad632d0b88078",
+        "name": "10:30am trigger",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "30 07 * * *",
+        "once": false,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 300,
+        "wires": [
+            [
+                "4c3fd66f.b3c028"
+            ]
+        ]
+    },
+    {
+        "id": "794e3a7.f86b1c4",
+        "type": "html",
+        "z": "774ad632d0b88078",
+        "name": "extract book title",
+        "property": "",
+        "outproperty": "",
+        "tag": ".dotd-title h2",
+        "ret": "text",
+        "as": "single",
+        "x": 450,
+        "y": 327,
+        "wires": [
+            [
+                "3ee0ed18.c11f12"
+            ]
+        ]
+    },
+    {
+        "id": "76356e7d.89ca9",
+        "type": "template",
+        "z": "774ad632d0b88078",
+        "name": "template",
+        "field": "payload",
+        "fieldType": "msg",
+        "syntax": "mustache",
+        "template": "{{#payload}}\n{{.}}\n{{/payload}}\n\nhttps://www.packtpub.com/packt/offers/free-learning",
+        "x": 420,
+        "y": 560,
+        "wires": [
+            [
+                "375a97013c597906"
+            ]
+        ]
+    },
+    {
+        "id": "3ee0ed18.c11f12",
+        "type": "function",
+        "z": "774ad632d0b88078",
+        "name": "trim & set subject",
+        "func": "msg.payload = msg.payload.map(function(item) {\n  return item.trim();\n});\nmsg.topic = 'Free eBook from Packt Publishing';\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 480,
+        "wires": [
+            [
+                "cc8ce2e8dcafe902",
+                "76356e7d.89ca9"
+            ]
+        ]
+    },
+    {
+        "id": "cc8ce2e8dcafe902",
+        "type": "debug",
+        "z": "774ad632d0b88078",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "1332334fe2cb4f15",
+        "type": "function",
+        "z": "774ad632d0b88078",
+        "name": "function 2",
+        "func": "var img = '<img src =\\\"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1280px-Image_created_with_a_mobile_phone.png\" style =\\\" width :0 px; height :0 px; \\\" > '\nmsg.payload = img + msg.payload\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "af6b3866c7f6a265",
+        "type": "debug",
+        "z": "774ad632d0b88078",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "f4e91c7a875784be",
+        "type": "function",
+        "z": "774ad632d0b88078",
+        "name": "function 4",
+        "func": "function hasOverlappingParts(string1, string2) {\n    const minLength = 5; \n    for (let i = 0; i < string1.length - minLength + 1; i++) {\n        const substring1 = string1.substr(i, minLength);\n        if (string2.includes(substring1)) {\n            return true;\n        }\n    }\n    return false;\n}\n\nfunction extractImageTags(str) {\n    const regex = /<img([^>]*)>/g;\n    const matches = str.match(regex);\n\n    if (matches) {\n        const extractedStrings = matches.map((match) => {\n            const startIndex = match.indexOf(\"<img\") + 4;\n            const endIndex = match.lastIndexOf(\"img>\") - 1;\n            return match.substring(startIndex, endIndex);\n        });\n\n        return extractedStrings;\n    }\n\n    return [];\n}\n\nconst string1 = extractImageTags(msg.payload);\nconst string2 = msg.replace(string1);\nconst hasOverlap = hasOverlappingParts(string1, string2);\nif (hasOverlap == true){\n    msg == null\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 760,
+        "wires": [
+            []
+        ]
+    }
+]

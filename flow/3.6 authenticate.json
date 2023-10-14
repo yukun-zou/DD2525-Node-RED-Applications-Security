@@ -1,0 +1,321 @@
+[
+    {
+        "id": "02d6b0659e276939",
+        "type": "tab",
+        "label": "Cloud-Vision",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "abcbcdc87e2ac260",
+        "type": "http request",
+        "z": "02d6b0659e276939",
+        "name": "Send a request to get labels",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 560,
+        "y": 440,
+        "wires": [
+            [
+                "43a397c57aabc297",
+                "bf52973169abd008"
+            ]
+        ]
+    },
+    {
+        "id": "ee5785128e67dbe4",
+        "type": "function",
+        "z": "02d6b0659e276939",
+        "name": "Make a request for the Google Cloud Vision API to get labels",
+        "func": "var image = {content: msg.payload};\nvar features = {type: 'LOGO_DETECTION', maxResults: 10};\nvar imageContext = {languageHints: 'ja'};\nvar originalUrl = \"https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDDtX_YnDVfS-o0a7jEDsV4rQALpCkq8Y4\";\nvar encodedUrl = encodeURIComponent(originalUrl);\nvar finalUrl = \"localhost:3000/images:annotate?key=\" + encodedUrl;\nvar request = {image: image, features: features, imageContext: imageContext};\nvar requests = {requests: request};\nmsg.payload = requests;\nmsg.URL = originalUrl;\nmsg.finalUrl = finalUrl;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 280,
+        "wires": [
+            [
+                "b57d51c485157ff2",
+                "a544afb9bb381cf0"
+            ]
+        ]
+    },
+    {
+        "id": "79aa9ffc7ae8f0eb",
+        "type": "change",
+        "z": "02d6b0659e276939",
+        "name": "Set url and headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "url",
+                "pt": "msg",
+                "to": "URL",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "Content-Type: application/json",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 550,
+        "y": 360,
+        "wires": [
+            [
+                "abcbcdc87e2ac260"
+            ]
+        ]
+    },
+    {
+        "id": "43a397c57aabc297",
+        "type": "function",
+        "z": "02d6b0659e276939",
+        "name": "Report found labels",
+        "func": "// To skip messages like { \"responses\": [ {} ] }\nif (Object.keys(msg.payload.responses[0]).length < 1) {\n    return null;\n}\n\nvar labels = 'labels: ';\nvar labelAnnotations = msg.payload.responses[0].labelAnnotations;\nfor (var i = 0; i < labelAnnotations.length; i++) {\n    labels += labelAnnotations[i].description;\n    labels +=' (' + labelAnnotations[i].score + '), ';\n}\n\nmsg.payload = labels.slice(0, labels.length - 2);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 520,
+        "wires": [
+            [
+                "72dc7ca5e02a9efa"
+            ]
+        ]
+    },
+    {
+        "id": "72dc7ca5e02a9efa",
+        "type": "debug",
+        "z": "02d6b0659e276939",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "bf52973169abd008",
+        "type": "debug",
+        "z": "02d6b0659e276939",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "4210c466c321d69b",
+        "type": "fileinject",
+        "z": "02d6b0659e276939",
+        "name": "",
+        "x": 470,
+        "y": 180,
+        "wires": [
+            [
+                "2ee50ebfedc99eaa"
+            ]
+        ]
+    },
+    {
+        "id": "e8fce7bd4ab0de12",
+        "type": "comment",
+        "z": "02d6b0659e276939",
+        "name": "Replace LABEL_DETECTION with another feature type if needed",
+        "info": "",
+        "x": 1150,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "f74c7a503d7a523c",
+        "type": "comment",
+        "z": "02d6b0659e276939",
+        "name": "Replace 'API_KEY' with your API key",
+        "info": "",
+        "x": 1130,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "b57d51c485157ff2",
+        "type": "change",
+        "z": "02d6b0659e276939",
+        "name": "malicious_url",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "URL",
+                "pt": "msg",
+                "to": "finalUrl",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 270,
+        "y": 360,
+        "wires": [
+            [
+                "79aa9ffc7ae8f0eb"
+            ]
+        ]
+    },
+    {
+        "id": "a544afb9bb381cf0",
+        "type": "debug",
+        "z": "02d6b0659e276939",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "finalUrl",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1050,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "416d749505bb6cc4",
+        "type": "function",
+        "z": "02d6b0659e276939",
+        "name": "tostring",
+        "func": "msg.payload = msg.payload.toString('base64')\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 220,
+        "wires": [
+            [
+                "ee5785128e67dbe4"
+            ]
+        ]
+    },
+    {
+        "id": "3cb4f9cd9f38d02d",
+        "type": "require",
+        "z": "02d6b0659e276939",
+        "name": "",
+        "module": "googleapis",
+        "field": "googleapis",
+        "fieldType": "flow",
+        "x": 550,
+        "y": 820,
+        "wires": [
+            [
+                "3260f0991621fd01"
+            ]
+        ]
+    },
+    {
+        "id": "3260f0991621fd01",
+        "type": "function",
+        "z": "02d6b0659e276939",
+        "name": "function 6",
+        "func": "let google = flow.get(\"googleapis\");\nasync function checkUrlReputation(url) {\n    const apiKey = \"AIzaSyBR9ViZUotI0REIsDxsvfmgIa9zMGnj9hU\"; // Replace with your actual Google Safe Browsing API key\n\n    const client = await google.safebrowsing(\"v4\").clients.create();\n    const requestData = {\n        client: client,\n        requestBody: {\n            threatInfo: {\n                threatTypes: [\"MALWARE\", \"SOCIAL_ENGINEERING\", \"UNWANTED_SOFTWARE\", \"POTENTIALLY_HARMFUL_APPLICATION\"],\n                platformTypes: [\"ANY_PLATFORM\"],\n                threatEntryTypes: [\"URL\"],\n                threatEntries: [{ url: url }],\n            },\n        },\n        auth: apiKey,\n    };\n\n    const response = await google.safebrowsing(\"v4\").threatMatches.find(requestData);\n\n    if (response.data && response.data.matches) {\n        msg = null\n    } \n    else\n    (\n        msg.payload = \"123\"\n    )\n}\n\n// Example usage\nconst url = \"https://example.com\";\ncheckUrlReputation(url);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 820,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "02b96d1223871c5f",
+        "type": "inject",
+        "z": "02d6b0659e276939",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 360,
+        "y": 820,
+        "wires": [
+            [
+                "3cb4f9cd9f38d02d"
+            ]
+        ]
+    },
+    {
+        "id": "2ee50ebfedc99eaa",
+        "type": "encrypt",
+        "z": "02d6b0659e276939",
+        "name": "encry",
+        "algorithm": "AES",
+        "key": "abc123",
+        "x": 630,
+        "y": 140,
+        "wires": [
+            [
+                "416d749505bb6cc4"
+            ]
+        ]
+    }
+]

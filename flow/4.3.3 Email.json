@@ -1,0 +1,134 @@
+[
+    {
+        "id": "208e60e1374e23c3",
+        "type": "tab",
+        "label": "sandtrap3_email",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "a9c9bb0e5b041d8c",
+        "type": "inject",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 630,
+        "y": 520,
+        "wires": [
+            [
+                "73fc0fff3e3e9c97"
+            ]
+        ]
+    },
+    {
+        "id": "73fc0fff3e3e9c97",
+        "type": "e-mail",
+        "z": "208e60e1374e23c3",
+        "server": "smtp.gmail.com",
+        "port": "465",
+        "authtype": "BASIC",
+        "saslformat": true,
+        "token": "oauth2Response.access_token",
+        "secure": true,
+        "tls": true,
+        "name": "yukunzou@kth.se",
+        "dname": "",
+        "x": 860,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "e3f69e66703c1dcd",
+        "type": "inject",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "363c480e9a87d0d6"
+            ]
+        ]
+    },
+    {
+        "id": "4b614dd1142ce14d",
+        "type": "function",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "func": "let sandtrap = flow.get(\"sandtrap\");\nlet path = flow.get(\"path\");\nlet root = \"C:/Users/79244/.node-red\";\n\nlet policyPath = \"C:/Users/79244/node_modules/node-red-node-email\";\nlet policy = new sandtrap.Policy.Basic.Policy(policyPath, \"quickstart\");\n\nlet box = new sandtrap.SandTrap(policy);\n\n//let moduleFilePath = path.resolve(policyPath, \"61-email\");\nlet r = box.LoadAsModule(\"61-email.js\");\n\n\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a0946683a5f7abe2",
+        "type": "require",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "module": "path",
+        "field": "path",
+        "fieldType": "flow",
+        "x": 1010,
+        "y": 320,
+        "wires": [
+            [
+                "4b614dd1142ce14d"
+            ]
+        ]
+    },
+    {
+        "id": "363c480e9a87d0d6",
+        "type": "require",
+        "z": "208e60e1374e23c3",
+        "name": "",
+        "module": "C:\\Users\\79244\\.node-red\\node_modules\\sandtrap\\index.js",
+        "field": "sandtrap",
+        "fieldType": "flow",
+        "x": 820,
+        "y": 420,
+        "wires": [
+            [
+                "a0946683a5f7abe2"
+            ]
+        ]
+    }
+]

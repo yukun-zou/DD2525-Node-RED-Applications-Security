@@ -1,0 +1,57 @@
+[
+    {
+        "id": "1cf04cea2bf651f2",
+        "type": "tab",
+        "label": "platform vulnerability",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "18fa45e.dd993ba",
+        "type": "debug",
+        "z": "1cf04cea2bf651f2",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 1090,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "d649825e.ab13d",
+        "type": "inject",
+        "z": "1cf04cea2bf651f2",
+        "name": "",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 710,
+        "y": 240,
+        "wires": [
+            [
+                "3197e4b9.85addc"
+            ]
+        ]
+    },
+    {
+        "id": "3197e4b9.85addc",
+        "type": "func-exec",
+        "z": "1cf04cea2bf651f2",
+        "name": "",
+        "func": "var exec = child_process.exec('dir', (error, stdout, stderr) => { \n    if (error) { \n    console.error(`exec error: ${error}`); \n    return; \n    } \n    console.log(`stdout: ${stdout}`); \n    console.log(`stderr: ${stderr}`); \n    msg.payload = stdout;\n    callback(msg);\n}); ",
+        "outputs": 1,
+        "noerr": 7,
+        "x": 900,
+        "y": 240,
+        "wires": [
+            [
+                "18fa45e.dd993ba"
+            ]
+        ]
+    }
+]
